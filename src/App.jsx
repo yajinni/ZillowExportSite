@@ -112,10 +112,13 @@ export default function App() {
       alert("No data available to export.");
       return;
     }
-    const headers = ['ZPID', 'Address', 'Beds', 'Baths', 'Sqft', 'Price/Sqft', 'Price', 'Zestimate', 'Tax Assessed Value', 'Difference %', 'Link', 'Scanned At'];
+    const headers = ['ZPID', 'Address', 'Beds', 'Baths', 'Sqft', 'Price/Sqft', 'Price', 'Zestimate', 'Tax Assessed Value', 'Tax Delta %', 'Zestimate Delta %', 'Link', 'Scanned At'];
     const rows = filteredAndSortedListings.map(p => {
       const diffPct = p.price && p.zestimate 
         ? (((p.price - p.zestimate) / p.zestimate) * 100).toFixed(1) 
+        : 'N/A';
+      const taxPct = p.price && p.taxAssessedValue
+        ? (((p.price - p.taxAssessedValue) / p.taxAssessedValue) * 100).toFixed(1)
         : 'N/A';
       return [
         p.zpid,
@@ -127,6 +130,7 @@ export default function App() {
         p.price || '',
         p.zestimate || '',
         p.taxAssessedValue || '',
+        taxPct + '%',
         diffPct + '%',
         p.url || '',
         p.scannedAt || ''
@@ -408,7 +412,7 @@ export default function App() {
                   <th>Size (Sqft)</th>
                   <th>Price / Price/Sqft</th>
                   <th>Zestimate</th>
-                  <th>Tax Value</th>
+                  <th>Tax Value / Delta</th>
                   <th>Zestimate Delta</th>
                   <th>Scan Time</th>
                   <th style={{ textAlign: 'center' }}>Actions</th>
@@ -451,7 +455,22 @@ export default function App() {
                         <span className="zestimate-tag">{formatCurrency(prop.zestimate)}</span>
                       </td>
                       <td>
-                        <span className="tax-tag">{formatCurrency(prop.taxAssessedValue)}</span>
+                        <div className="tax-tag" style={{ fontWeight: '500' }}>{formatCurrency(prop.taxAssessedValue)}</div>
+                        {prop.price > 0 && prop.taxAssessedValue > 0 ? (() => {
+                          const taxDelta = ((prop.price - prop.taxAssessedValue) / prop.taxAssessedValue) * 100;
+                          const isBelowTax = prop.price < prop.taxAssessedValue;
+                          return (
+                            <div style={{ 
+                              fontSize: '0.8rem', 
+                              color: isBelowTax ? 'var(--accent-green)' : 'var(--text-secondary)',
+                              fontWeight: '500', 
+                              marginTop: '0.1rem' 
+                            }}>
+                              {isBelowTax ? '🟢 ' : ''}
+                              {taxDelta > 0 ? '+' : ''}{taxDelta.toFixed(1)}% vs Tax
+                            </div>
+                          );
+                        })() : null}
                       </td>
                       <td>
                         {deltaPct !== null ? (
