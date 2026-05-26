@@ -440,7 +440,7 @@ export default function App() {
                       </td>
                       <td>
                         <span style={{ fontWeight: '500', color: 'var(--text-primary)' }}>
-                          {prop.sqft ? `${prop.sqft.toLocaleString()} sqft` : '—'}
+                          {prop.sqft ? prop.sqft.toLocaleString() : '—'}
                         </span>
                       </td>
                       <td>
