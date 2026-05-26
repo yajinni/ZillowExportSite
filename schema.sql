@@ -6,5 +6,9 @@ CREATE TABLE IF NOT EXISTS listings (
     price REAL,
     zestimate REAL,
     taxAssessedValue REAL,
+    beds INTEGER,
+    baths REAL,
+    sqft INTEGER,
+    pricePerSqft REAL,
     scannedAt TEXT DEFAULT (datetime('now', 'localtime'))
 );

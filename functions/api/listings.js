@@ -27,7 +27,8 @@ export async function onRequestGet(context) {
 
         // Query all listings ordered by the scan date (newest first)
         const { results } = await env.DB.prepare(
-            "SELECT zpid, url, address, price, zestimate, taxAssessedValue, scannedAt FROM listings ORDER BY scannedAt DESC"
+            `SELECT zpid, url, address, price, zestimate, taxAssessedValue, beds, baths, sqft, pricePerSqft, scannedAt 
+             FROM listings ORDER BY scannedAt DESC`
         ).all();
 
         return new Response(JSON.stringify(results), {
@@ -65,16 +66,20 @@ export async function onRequestPost(context) {
 
         // Prepare the upsert statement
         const stmt = env.DB.prepare(
-            `INSERT OR REPLACE INTO listings (zpid, url, address, price, zestimate, taxAssessedValue, scannedAt)
-             VALUES (?, ?, ?, ?, ?, ?, datetime('now', 'localtime'))`
+            `INSERT OR REPLACE INTO listings (zpid, url, address, price, zestimate, taxAssessedValue, beds, baths, sqft, pricePerSqft, scannedAt)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now', 'localtime'))`
         );
 
         // Run batch query for maximum performance on multiple properties
         const batchStatements = listings.map(p => {
-            // Normalize values - ensure prices and zestimates are clean numbers or null
+            // Normalize values
             const cleanPrice = p.price ? parseFloat(String(p.price).replace(/[^0-9.]/g, '')) : null;
             const cleanZestimate = p.zestimate ? parseFloat(String(p.zestimate).replace(/[^0-9.]/g, '')) : null;
             const cleanTaxVal = p.taxAssessedValue ? parseFloat(String(p.taxAssessedValue).replace(/[^0-9.]/g, '')) : null;
+            const cleanBeds = p.beds !== undefined && p.beds !== null ? parseInt(String(p.beds).replace(/[^0-9]/g, '')) : null;
+            const cleanBaths = p.baths !== undefined && p.baths !== null ? parseFloat(String(p.baths).replace(/[^0-9.]/g, '')) : null;
+            const cleanSqft = p.sqft !== undefined && p.sqft !== null ? parseInt(String(p.sqft).replace(/[^0-9]/g, '')) : null;
+            const cleanPricePerSqft = p.pricePerSqft !== undefined && p.pricePerSqft !== null ? parseFloat(String(p.pricePerSqft).replace(/[^0-9.]/g, '')) : null;
             
             return stmt.bind(
                 String(p.zpid),
@@ -82,7 +87,11 @@ export async function onRequestPost(context) {
                 p.address || null,
                 isNaN(cleanPrice) ? null : cleanPrice,
                 isNaN(cleanZestimate) ? null : cleanZestimate,
-                isNaN(cleanTaxVal) ? null : cleanTaxVal
+                isNaN(cleanTaxVal) ? null : cleanTaxVal,
+                isNaN(cleanBeds) ? null : cleanBeds,
+                isNaN(cleanBaths) ? null : cleanBaths,
+                isNaN(cleanSqft) ? null : cleanSqft,
+                isNaN(cleanPricePerSqft) ? null : cleanPricePerSqft
             );
         });
 

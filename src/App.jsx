@@ -6,6 +6,7 @@ export default function App() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [priceFilter, setPriceFilter] = useState('all');
+  const [bedsFilter, setBedsFilter] = useState('all');
   const [dealFilter, setDealFilter] = useState('all');
   const [sortOrder, setSortOrder] = useState('newest');
   const [showConfigGuide, setShowConfigGuide] = useState(false);
@@ -76,7 +77,6 @@ export default function App() {
         method: 'DELETE'
       });
       if (res.ok) {
-        // Optimistic state update
         setListings(prev => prev.filter(item => item.zpid !== zpid));
       } else {
         alert("Failed to delete the listing.");
@@ -112,7 +112,7 @@ export default function App() {
       alert("No data available to export.");
       return;
     }
-    const headers = ['ZPID', 'Address', 'Price', 'Zestimate', 'Tax Assessed Value', 'Difference %', 'Link', 'Scanned At'];
+    const headers = ['ZPID', 'Address', 'Beds', 'Baths', 'Sqft', 'Price/Sqft', 'Price', 'Zestimate', 'Tax Assessed Value', 'Difference %', 'Link', 'Scanned At'];
     const rows = filteredAndSortedListings.map(p => {
       const diffPct = p.price && p.zestimate 
         ? (((p.price - p.zestimate) / p.zestimate) * 100).toFixed(1) 
@@ -120,6 +120,10 @@ export default function App() {
       return [
         p.zpid,
         p.address || '',
+        p.beds || '',
+        p.baths || '',
+        p.sqft || '',
+        p.pricePerSqft || '',
         p.price || '',
         p.zestimate || '',
         p.taxAssessedValue || '',
@@ -147,6 +151,11 @@ export default function App() {
     ? (discountListings.reduce((sum, l) => sum + ((l.price - l.zestimate) / l.zestimate), 0) / discountListings.length) * 100
     : 0;
 
+  const listingsWithPricePerSqft = listings.filter(l => l.pricePerSqft > 0);
+  const avgPricePerSqft = listingsWithPricePerSqft.length > 0
+    ? Math.round(listingsWithPricePerSqft.reduce((sum, l) => sum + l.pricePerSqft, 0) / listingsWithPricePerSqft.length)
+    : 0;
+
   // Filter and Sort Listings logic
   const filteredAndSortedListings = listings
     .filter(item => {
@@ -164,13 +173,19 @@ export default function App() {
       else if (priceFilter === '750to1m') matchPrice = item.price > 750000 && item.price <= 1000000;
       else if (priceFilter === 'over1m') matchPrice = item.price > 1000000;
 
+      // Bedrooms filter
+      let matchBeds = true;
+      if (bedsFilter !== 'all') {
+        matchBeds = item.beds !== null && item.beds >= parseInt(bedsFilter);
+      }
+
       // Deal status filter
       let matchDeal = true;
       if (dealFilter === 'discount') matchDeal = item.price > 0 && item.zestimate > 0 && item.price < item.zestimate;
       else if (dealFilter === 'overpriced') matchDeal = item.price > 0 && item.zestimate > 0 && item.price > item.zestimate;
       else if (dealFilter === 'no_zestimate') matchDeal = !item.zestimate;
 
-      return matchSearch && matchPrice && matchDeal;
+      return matchSearch && matchPrice && matchBeds && matchDeal;
     })
     .sort((a, b) => {
       if (sortOrder === 'newest') {
@@ -226,6 +241,16 @@ export default function App() {
         </div>
 
         <div className="metric-card">
+          <div className="metric-icon" style={{ color: 'var(--accent-orange)', background: 'hsla(30, 90%, 55%, 0.08)', borderColor: 'hsla(30, 90%, 55%, 0.15)' }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line></svg>
+          </div>
+          <div className="metric-info">
+            <span className="metric-label">Avg. Price / Sqft</span>
+            <span className="metric-value">{avgPricePerSqft > 0 ? `${formatCurrency(avgPricePerSqft)}/sqft` : 'N/A'}</span>
+          </div>
+        </div>
+
+        <div className="metric-card">
           <div className="metric-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
           </div>
@@ -265,6 +290,19 @@ export default function App() {
             <option value="500to750">$500k - $750k</option>
             <option value="750to1m">$750k - $1M</option>
             <option value="over1m">$1M+</option>
+          </select>
+
+          {/* Beds filter */}
+          <select 
+            className="filter-select"
+            value={bedsFilter}
+            onChange={(e) => setBedsFilter(e.target.value)}
+          >
+            <option value="all">Any Bedrooms</option>
+            <option value="1">1+ Beds</option>
+            <option value="2">2+ Beds</option>
+            <option value="3">3+ Beds</option>
+            <option value="4">4+ Beds</option>
           </select>
 
           {/* Deal status filter */}
@@ -352,7 +390,7 @@ export default function App() {
               <>
                 <h3>No Match Found</h3>
                 <p>Try adjusting your search query, price tiers, or deal filters.</p>
-                <button className="btn btn-secondary" onClick={() => { setSearchTerm(''); setPriceFilter('all'); setDealFilter('all'); }}>
+                <button className="btn btn-secondary" onClick={() => { setSearchTerm(''); setPriceFilter('all'); setBedsFilter('all'); setDealFilter('all'); }}>
                   Reset Filters
                 </button>
               </>
@@ -366,7 +404,9 @@ export default function App() {
               <thead>
                 <tr>
                   <th>Address & ZPID</th>
-                  <th>Price</th>
+                  <th>Specs (Beds/Baths)</th>
+                  <th>Size (Sqft)</th>
+                  <th>Price / Price/Sqft</th>
                   <th>Zestimate</th>
                   <th>Tax Value</th>
                   <th>Zestimate Delta</th>
@@ -390,7 +430,22 @@ export default function App() {
                         <span className="zpid-badge">ZPID: {prop.zpid}</span>
                       </td>
                       <td>
-                        <span className="price-tag">{formatCurrency(prop.price)}</span>
+                        <div style={{ fontWeight: '500' }}>
+                          {prop.beds !== null && prop.beds !== undefined ? `${prop.beds} bd` : '—'} / {prop.baths !== null && prop.baths !== undefined ? `${prop.baths} ba` : '—'}
+                        </div>
+                      </td>
+                      <td>
+                        <span style={{ fontWeight: '500', color: 'var(--text-primary)' }}>
+                          {prop.sqft ? `${prop.sqft.toLocaleString()} sqft` : '—'}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="price-tag">{formatCurrency(prop.price)}</div>
+                        {prop.pricePerSqft ? (
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.1rem' }}>
+                            {formatCurrency(prop.pricePerSqft)}/sqft
+                          </div>
+                        ) : null}
                       </td>
                       <td>
                         <span className="zestimate-tag">{formatCurrency(prop.zestimate)}</span>
