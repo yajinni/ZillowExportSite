@@ -27,7 +27,7 @@ export async function onRequestGet(context) {
 
         // Query all listings ordered by the scan date (newest first)
         const { results } = await env.DB.prepare(
-            `SELECT zpid, url, address, price, zestimate, taxAssessedValue, beds, baths, sqft, pricePerSqft, scannedAt 
+            `SELECT zpid, url, address, price, zestimate, taxAssessedValue, beds, baths, sqft, pricePerSqft, imgSrc, scannedAt 
              FROM listings ORDER BY scannedAt DESC`
         ).all();
 
@@ -66,8 +66,8 @@ export async function onRequestPost(context) {
 
         // Prepare the upsert statement
         const stmt = env.DB.prepare(
-            `INSERT OR REPLACE INTO listings (zpid, url, address, price, zestimate, taxAssessedValue, beds, baths, sqft, pricePerSqft, scannedAt)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now', 'localtime'))`
+            `INSERT OR REPLACE INTO listings (zpid, url, address, price, zestimate, taxAssessedValue, beds, baths, sqft, pricePerSqft, imgSrc, scannedAt)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now', 'localtime'))`
         );
 
         // Run batch query for maximum performance on multiple properties
@@ -91,7 +91,8 @@ export async function onRequestPost(context) {
                 isNaN(cleanBeds) ? null : cleanBeds,
                 isNaN(cleanBaths) ? null : cleanBaths,
                 isNaN(cleanSqft) ? null : cleanSqft,
-                isNaN(cleanPricePerSqft) ? null : cleanPricePerSqft
+                isNaN(cleanPricePerSqft) ? null : cleanPricePerSqft,
+                p.imgSrc || null
             );
         });
 

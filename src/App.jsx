@@ -352,17 +352,17 @@ export default function App() {
         </div>
       </section>
 
-      {/* Main Database Table Section */}
-      <main className="table-card">
-        <div className="table-header-bar">
-          <h2>Scanned Properties</h2>
+      {/* Main Database Grid Section */}
+      <main style={{ marginTop: '1rem' }}>
+        <div className="table-header-bar" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '16px 16px 0 0', padding: '1.25rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: '600' }}>Scanned Properties</h2>
           <span className="listings-count">
             Showing {filteredAndSortedListings.length} of {totalCount} listings
           </span>
         </div>
 
         {error && (
-          <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--accent-red)' }}>
+          <div style={{ padding: '3rem 2rem', textAlign: 'center', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderTop: 'none', borderRadius: '0 0 16px 16px', color: 'var(--accent-red)' }}>
             <p>⚠️ Error: {error}</p>
             <button className="btn btn-secondary" style={{ marginTop: '1rem' }} onClick={() => fetchListings(true)}>
               Retry Connection
@@ -371,14 +371,14 @@ export default function App() {
         )}
 
         {!error && loading && listings.length === 0 && (
-          <div className="loader-container">
+          <div className="loader-container" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderTop: 'none', borderRadius: '0 0 16px 16px' }}>
             <div className="spinner"></div>
             <p>Connecting to Cloudflare D1 Vault...</p>
           </div>
         )}
 
         {!error && !loading && filteredAndSortedListings.length === 0 && (
-          <div className="empty-state">
+          <div className="empty-state" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderTop: 'none', borderRadius: '0 0 16px 16px' }}>
             <div className="empty-state-icon">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="8" y1="12" x2="16" y2="12"></line></svg>
             </div>
@@ -403,113 +403,131 @@ export default function App() {
         )}
 
         {!error && filteredAndSortedListings.length > 0 && (
-          <div className="table-responsive">
-            <table className="listings-table">
-              <thead>
-                <tr>
-                  <th>Address & ZPID</th>
-                  <th>Specs (Beds/Baths)</th>
-                  <th>Size (Sqft)</th>
-                  <th>Price / Price/Sqft</th>
-                  <th>Zestimate</th>
-                  <th>Tax Value / Delta</th>
-                  <th>Zestimate Delta</th>
-                  <th>Scan Time</th>
-                  <th style={{ textAlign: 'center' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredAndSortedListings.map((prop) => {
-                  // Calculate comparison discount
-                  const isDiscount = prop.price > 0 && prop.zestimate > 0 && prop.price < prop.zestimate;
-                  const isOver = prop.price > 0 && prop.zestimate > 0 && prop.price > prop.zestimate;
-                  const deltaPct = prop.price > 0 && prop.zestimate > 0
-                    ? ((prop.price - prop.zestimate) / prop.zestimate) * 100
-                    : null;
+          <div className="listings-cards-grid" style={{ marginTop: '2rem' }}>
+            {filteredAndSortedListings.map((prop) => {
+              // Calculate comparison discount
+              const isDiscount = prop.price > 0 && prop.zestimate > 0 && prop.price < prop.zestimate;
+              const isOver = prop.price > 0 && prop.zestimate > 0 && prop.price > prop.zestimate;
+              const deltaPct = prop.price > 0 && prop.zestimate > 0
+                ? ((prop.price - prop.zestimate) / prop.zestimate) * 100
+                : null;
 
-                  return (
-                    <tr key={prop.zpid}>
-                      <td className="address-cell">
-                        <div>{prop.address || 'Address Hidden/Missing'}</div>
-                        <span className="zpid-badge">ZPID: {prop.zpid}</span>
-                      </td>
-                      <td>
-                        <div style={{ fontWeight: '500' }}>
-                          {prop.beds !== null && prop.beds !== undefined ? `${prop.beds} bd` : '—'} / {prop.baths !== null && prop.baths !== undefined ? `${prop.baths} ba` : '—'}
-                        </div>
-                      </td>
-                      <td>
-                        <span style={{ fontWeight: '500', color: 'var(--text-primary)' }}>
-                          {prop.sqft ? prop.sqft.toLocaleString() : '—'}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="price-tag">{formatCurrency(prop.price)}</div>
-                        {prop.pricePerSqft ? (
-                          <div style={{ color: 'var(--text-secondary)', marginTop: '0.1rem' }}>
-                            {formatCurrency(prop.pricePerSqft)}/sqft
-                          </div>
-                        ) : null}
-                      </td>
-                      <td>
-                        <span className="zestimate-tag">{formatCurrency(prop.zestimate)}</span>
-                      </td>
-                      <td>
-                        <div className="tax-tag" style={{ fontWeight: '500' }}>{formatCurrency(prop.taxAssessedValue)}</div>
-                        {prop.price > 0 && prop.taxAssessedValue > 0 ? (() => {
-                          const taxDelta = ((prop.price - prop.taxAssessedValue) / prop.taxAssessedValue) * 100;
-                          const isGoodTaxDeal = prop.price <= 1.5 * prop.taxAssessedValue;
-                          return (
-                            <div style={{ 
-                              color: isGoodTaxDeal ? 'var(--accent-green)' : 'var(--text-secondary)',
-                              fontWeight: '500', 
-                              marginTop: '0.1rem' 
-                            }}>
-                              {isGoodTaxDeal ? '🟢 ' : ''}
-                              {taxDelta > 0 ? '+' : ''}{taxDelta.toFixed(1)}% vs Tax
-                            </div>
-                          );
-                        })() : null}
-                      </td>
-                      <td>
-                        {deltaPct !== null ? (
-                          <span className={`deal-indicator ${isDiscount ? 'good' : (isOver ? 'overpriced' : 'fair')}`}>
-                            {isDiscount ? '🟢 ' : (isOver ? '🔴 +' : '🟡 ')}
-                            {deltaPct.toFixed(1)}%
+              // Tax comparisons
+              const taxDelta = prop.price > 0 && prop.taxAssessedValue > 0
+                ? ((prop.price - prop.taxAssessedValue) / prop.taxAssessedValue) * 100
+                : null;
+              const isGoodTaxDeal = prop.price > 0 && prop.taxAssessedValue > 0 && prop.price <= 1.5 * prop.taxAssessedValue;
+
+              return (
+                <article key={prop.zpid} className="house-card">
+                  {/* ZPID Badge Overlay */}
+                  <span className="card-zpid-subbadge">ZPID: {prop.zpid}</span>
+
+                  {/* Deal Badge Overlay */}
+                  {deltaPct !== null && (
+                    <span className={`card-deal-badge ${isDiscount ? 'good' : (isOver ? 'overpriced' : 'fair')}`}>
+                      {isDiscount ? '🟢 ' : (isOver ? '🔴 +' : '🟡 ')}
+                      {deltaPct.toFixed(1)}% Zest
+                    </span>
+                  )}
+
+                  {/* Card Image */}
+                  <div className="card-image-wrapper">
+                    {prop.imgSrc ? (
+                      <img 
+                        src={prop.imgSrc} 
+                        alt={prop.address || "Zillow listing image"} 
+                        className="card-img" 
+                        onError={(e) => { 
+                          e.target.style.display = 'none'; 
+                          e.target.nextSibling.style.display = 'flex'; 
+                        }} 
+                      />
+                    ) : null}
+                    <div className="card-image-placeholder" style={{ display: prop.imgSrc ? 'none' : 'flex' }}>
+                      <svg className="placeholder-svg-house" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* Card Content Body */}
+                  <div className="card-body">
+                    {/* Price Row */}
+                    <div className="card-price-row">
+                      <span className="card-price-val">{formatCurrency(prop.price)}</span>
+                      {prop.pricePerSqft ? (
+                        <span className="card-price-sqft-val">{formatCurrency(prop.pricePerSqft)}/sqft</span>
+                      ) : null}
+                    </div>
+
+                    {/* Address Text */}
+                    <div className="card-address-text" title={prop.address}>
+                      {prop.address || 'Address Hidden/Missing'}
+                    </div>
+
+                    {/* Specs Row */}
+                    <div className="card-specs-container">
+                      <div className="card-spec-item" title="Bedrooms">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 4v16M2 8h20M22 4v16M2 12h20M2 16h20"></path></svg>
+                        <span>{prop.beds !== null && prop.beds !== undefined ? `${prop.beds} bd` : '—'}</span>
+                      </div>
+                      <div className="card-spec-item" title="Bathrooms">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM21 21v-1a4 4 0 0 0-3-3.87m-11 0A4 4 0 0 0 2 20v1"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        <span>{prop.baths !== null && prop.baths !== undefined ? `${prop.baths} ba` : '—'}</span>
+                      </div>
+                      <div className="card-spec-item" title="Square Footage">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line></svg>
+                        <span>{prop.sqft ? prop.sqft.toLocaleString() : '—'}</span>
+                      </div>
+                    </div>
+
+                    {/* Detailed Comparisons Box */}
+                    <div className="card-details-comparison">
+                      <div className="comparison-box">
+                        <span className="comparison-label">Zestimate</span>
+                        <span className="comparison-value">{formatCurrency(prop.zestimate)}</span>
+                      </div>
+                      <div className="comparison-box">
+                        <span className="comparison-label">Tax Value</span>
+                        <span className="comparison-value">{formatCurrency(prop.taxAssessedValue)}</span>
+                        {taxDelta !== null && (
+                          <span className="comparison-subvalue" style={{ color: isGoodTaxDeal ? 'var(--accent-green)' : 'var(--text-secondary)' }}>
+                            {isGoodTaxDeal ? '🟢 ' : ''}{taxDelta > 0 ? '+' : ''}{taxDelta.toFixed(1)}% vs Tax
                           </span>
-                        ) : (
-                          <span className="text-muted" style={{ color: 'var(--text-muted)' }}>N/A</span>
                         )}
-                      </td>
-                      <td>
-                        <span className="scan-time">{formatDate(prop.scannedAt)}</span>
-                      </td>
-                      <td style={{ textAlign: 'center' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-                          <a 
-                            href={prop.url} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="view-link"
-                            title="Open Listing on Zillow"
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                            <span>Zillow</span>
-                          </a>
-                          <button 
-                            className="row-action-btn"
-                            onClick={() => handleDeleteSingle(prop.zpid)}
-                            title="Delete listing from Vault"
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                      </div>
+                    </div>
+
+                    {/* Footer Actions */}
+                    <div className="card-footer-block">
+                      <span className="card-timestamp">{formatDate(prop.scannedAt)}</span>
+                      <div className="card-actions-wrapper">
+                        <a 
+                          href={prop.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="view-link"
+                          style={{ fontSize: '0.9rem' }}
+                          title="Open Listing on Zillow"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                          <span>Zillow</span>
+                        </a>
+                        <button 
+                          className="row-action-btn"
+                          onClick={() => handleDeleteSingle(prop.zpid)}
+                          title="Delete listing from Vault"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         )}
       </main>

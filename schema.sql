@@ -10,5 +10,6 @@ CREATE TABLE IF NOT EXISTS listings (
     baths REAL,
     sqft INTEGER,
     pricePerSqft REAL,
+    imgSrc TEXT,
     scannedAt TEXT DEFAULT (datetime('now', 'localtime'))
 );
