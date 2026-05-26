@@ -449,7 +449,6 @@ body {
 }
 
 .zpid-badge {
-  font-size: 0.75rem;
   font-family: monospace;
   background: var(--bg-tertiary);
   padding: 0.15rem 0.4rem;
@@ -468,13 +467,11 @@ body {
 }
 
 .zestimate-tag {
-  font-size: 0.9rem;
   color: var(--text-secondary);
   font-weight: 500;
 }
 
 .tax-tag {
-  font-size: 0.9rem;
   color: var(--text-muted);
 }
 
@@ -483,7 +480,6 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  font-size: 0.8rem;
   font-weight: 600;
   padding: 0.2rem 0.5rem;
   border-radius: 6px;
@@ -509,7 +505,6 @@ body {
 
 /* Date scan styling */
 .scan-time {
-  font-size: 0.85rem;
   color: var(--text-secondary);
 }
 

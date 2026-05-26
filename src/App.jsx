@@ -446,7 +446,7 @@ export default function App() {
                       <td>
                         <div className="price-tag">{formatCurrency(prop.price)}</div>
                         {prop.pricePerSqft ? (
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.1rem' }}>
+                          <div style={{ color: 'var(--text-secondary)', marginTop: '0.1rem' }}>
                             {formatCurrency(prop.pricePerSqft)}/sqft
                           </div>
                         ) : null}
@@ -461,7 +461,6 @@ export default function App() {
                           const isGoodTaxDeal = prop.price <= 1.5 * prop.taxAssessedValue;
                           return (
                             <div style={{ 
-                              fontSize: '0.8rem', 
                               color: isGoodTaxDeal ? 'var(--accent-green)' : 'var(--text-secondary)',
                               fontWeight: '500', 
                               marginTop: '0.1rem' 
