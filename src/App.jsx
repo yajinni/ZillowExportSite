@@ -423,13 +423,7 @@ export default function App() {
                   {/* ZPID Badge Overlay */}
                   <span className="card-zpid-subbadge">ZPID: {prop.zpid}</span>
 
-                  {/* Deal Badge Overlay */}
-                  {deltaPct !== null && (
-                    <span className={`card-deal-badge ${isDiscount ? 'good' : (isOver ? 'overpriced' : 'fair')}`}>
-                      {isDiscount ? '🟢 ' : (isOver ? '🔴 +' : '🟡 ')}
-                      {deltaPct.toFixed(1)}% Zest
-                    </span>
-                  )}
+
 
                   {/* Card Image */}
                   <div className="card-image-wrapper">
@@ -488,13 +482,18 @@ export default function App() {
                       <div className="comparison-box">
                         <span className="comparison-label">Zestimate</span>
                         <span className="comparison-value">{formatCurrency(prop.zestimate)}</span>
+                        {deltaPct !== null && (
+                          <span className="comparison-subvalue" style={{ color: isDiscount ? 'var(--accent-green)' : 'var(--text-secondary)', fontWeight: '600' }}>
+                            Price {deltaPct > 0 ? '+' : ''}{deltaPct.toFixed(1)}%
+                          </span>
+                        )}
                       </div>
                       <div className="comparison-box">
                         <span className="comparison-label">Tax Value</span>
                         <span className="comparison-value">{formatCurrency(prop.taxAssessedValue)}</span>
                         {taxDelta !== null && (
-                          <span className="comparison-subvalue" style={{ color: isGoodTaxDeal ? 'var(--accent-green)' : 'var(--text-secondary)' }}>
-                            {isGoodTaxDeal ? '🟢 ' : ''}{taxDelta > 0 ? '+' : ''}{taxDelta.toFixed(1)}% vs Tax
+                          <span className="comparison-subvalue" style={{ color: isGoodTaxDeal ? 'var(--accent-green)' : 'var(--text-secondary)', fontWeight: '600' }}>
+                            Price {taxDelta > 0 ? '+' : ''}{taxDelta.toFixed(1)}%
                           </span>
                         )}
                       </div>
