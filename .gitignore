@@ -25,4 +25,6 @@ dist-ssr
 
 # Cloudflare Wrangler Cache
 .wrangler/
+wrangler.json
+
 
