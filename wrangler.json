@@ -2,12 +2,5 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "zillow-export-site",
   "pages_build_output_dir": "dist",
-  "compatibility_date": "2024-04-03",
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "zillow_export_db",
-      "database_id": "REPLACE_WITH_DATABASE_ID_DURING_DEPLOY"
-    }
-  ]
+  "compatibility_date": "2024-04-03"
 }
