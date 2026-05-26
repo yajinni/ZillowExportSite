@@ -458,15 +458,15 @@ export default function App() {
                         <div className="tax-tag" style={{ fontWeight: '500' }}>{formatCurrency(prop.taxAssessedValue)}</div>
                         {prop.price > 0 && prop.taxAssessedValue > 0 ? (() => {
                           const taxDelta = ((prop.price - prop.taxAssessedValue) / prop.taxAssessedValue) * 100;
-                          const isBelowTax = prop.price < prop.taxAssessedValue;
+                          const isGoodTaxDeal = prop.price <= 1.5 * prop.taxAssessedValue;
                           return (
                             <div style={{ 
                               fontSize: '0.8rem', 
-                              color: isBelowTax ? 'var(--accent-green)' : 'var(--text-secondary)',
+                              color: isGoodTaxDeal ? 'var(--accent-green)' : 'var(--text-secondary)',
                               fontWeight: '500', 
                               marginTop: '0.1rem' 
                             }}>
-                              {isBelowTax ? '🟢 ' : ''}
+                              {isGoodTaxDeal ? '🟢 ' : ''}
                               {taxDelta > 0 ? '+' : ''}{taxDelta.toFixed(1)}% vs Tax
                             </div>
                           );
