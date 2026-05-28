@@ -29,6 +29,7 @@ export default function App() {
   const [extensionInstalled, setExtensionInstalled] = useState(false);
   const [extensionVersion, setExtensionVersion] = useState(null);
   const [latestVersion, setLatestVersion] = useState("1.1");
+  const [showFilterSidebar, setShowFilterSidebar] = useState(false);
 
   // Fetch the latest version dynamically from the extension's raw GitHub manifest on mount
   useEffect(() => {
@@ -370,9 +371,20 @@ export default function App() {
             <p>Cloud Storage & Analytics for Scanned Listings</p>
           </div>
         </div>
-        <div className="sync-status-indicator">
-          <span className={`status-dot ${error ? 'offline' : 'online'}`}></span>
-          <span>{error ? "Database Disconnected" : "Live Auto-Sync Active"}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div className="sync-status-indicator">
+            <span className={`status-dot ${error ? 'offline' : 'online'}`}></span>
+            <span>{error ? "Database Disconnected" : "Live Auto-Sync Active"}</span>
+          </div>
+          <button 
+            className="btn btn-secondary" 
+            onClick={() => setShowFilterSidebar(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem' }}
+            title="Open Filters & Dashboard Actions"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+            <span>Filters & Actions</span>
+          </button>
         </div>
       </header>
 
@@ -421,120 +433,7 @@ export default function App() {
         </div>
       </section>
 
-      {/* Control Filters Panel */}
-      <section className="controls-panel">
-        <div className="search-filter-group">
-          {/* Search Box */}
-          <div className="search-box-wrapper">
-            <svg className="search-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input 
-              type="text" 
-              placeholder="Search by Address or ZPID..." 
-              className="search-input"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
 
-          {/* Price Range Filter */}
-          <select 
-            className="filter-select"
-            value={priceFilter}
-            onChange={(e) => setPriceFilter(e.target.value)}
-          >
-            <option value="all">All Prices</option>
-            <option value="under300">Under $300,000</option>
-            <option value="300to500">$300k - $500k</option>
-            <option value="500to750">$500k - $750k</option>
-            <option value="750to1m">$750k - $1M</option>
-            <option value="over1m">$1M+</option>
-          </select>
-
-          {/* Beds filter */}
-          <select 
-            className="filter-select"
-            value={bedsFilter}
-            onChange={(e) => setBedsFilter(e.target.value)}
-          >
-            <option value="all">Any Bedrooms</option>
-            <option value="1">1+ Beds</option>
-            <option value="2">2+ Beds</option>
-            <option value="3">3+ Beds</option>
-            <option value="4">4+ Beds</option>
-          </select>
-
-          {/* Deal status filter */}
-          <select 
-            className="filter-select"
-            value={dealFilter}
-            onChange={(e) => setDealFilter(e.target.value)}
-          >
-            <option value="all">All Deals</option>
-            <option value="discount">🟢 Priced below Zestimate</option>
-            <option value="overpriced">🔴 Priced above Zestimate</option>
-            <option value="no_zestimate">⚪ No Zestimate info</option>
-          </select>
-
-          {/* Sort order filter */}
-          <select 
-            className="filter-select"
-            value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value)}
-          >
-            <option value="newest">Newest Scanned</option>
-            <option value="price_asc">Price: Low to High</option>
-            <option value="price_desc">Price: High to Low</option>
-            <option value="discount_desc">Biggest Discount %</option>
-          </select>
-
-          {/* Favorites filter button */}
-          <button 
-            type="button"
-            className={`filter-select ${showFavoritesOnly ? 'active-favorite' : ''}`}
-            style={{ 
-              display: 'inline-flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              gap: '0.5rem', 
-              background: showFavoritesOnly ? 'hsla(50, 95%, 55%, 0.12)' : 'var(--bg-tertiary)',
-              borderColor: showFavoritesOnly ? 'hsl(45, 95%, 55%)' : 'var(--border-color)',
-              color: showFavoritesOnly ? 'hsl(45, 95%, 65%)' : 'var(--text-primary)',
-              fontWeight: '600'
-            }}
-            onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-          >
-            <span>{showFavoritesOnly ? '★ Favorites Only' : '☆ Show All'}</span>
-          </button>
-        </div>
-
-        {/* Global actions */}
-        <div className="action-buttons-group">
-          <button className="btn btn-secondary" onClick={() => setShowConfigGuide(true)}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-            <span>Extension Setup</span>
-          </button>
-          {listings.some(l => l.favorite === 1) && (
-            <button 
-              className="btn btn-secondary" 
-              onClick={handleSyncAllFavorites}
-              style={{ color: 'var(--accent-cyan)' }}
-              title="Sync All Favorites: Refreshes every marked favorite listing sequentially using Zillow in background tabs and auto-closes them."
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-              <span>Sync Favorites</span>
-            </button>
-          )}
-          <button className="btn btn-primary" onClick={handleClipboardExport} disabled={filteredAndSortedListings.length === 0}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-            <span>Export to Sheets</span>
-          </button>
-          {listings.length > 0 && (
-            <button className="btn btn-danger" onClick={handleClearAll} disabled={isDeleting}>
-              <span>{isDeleting ? "Clearing..." : "Clear Vault"}</span>
-            </button>
-          )}
-        </div>
-      </section>
 
       {/* Main Database Grid Section */}
       <main style={{ marginTop: '1rem' }}>
@@ -882,6 +781,147 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* Collapsible Filters & Actions Sidebar */}
+      <div 
+        className={`sidebar-overlay ${showFilterSidebar ? 'active' : ''}`}
+        onClick={() => setShowFilterSidebar(false)}
+      />
+      <div className={`filters-sidebar ${showFilterSidebar ? 'active' : ''}`}>
+        <div className="sidebar-header">
+          <h3>Filters & Actions</h3>
+          <button 
+            className="sidebar-close-btn"
+            onClick={() => setShowFilterSidebar(false)}
+            title="Close sidebar"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        
+        <div className="sidebar-body">
+          {/* Section: Search & Filters */}
+          <div>
+            <div className="sidebar-section-title">Search & Filters</div>
+            <div className="sidebar-control-group">
+              {/* Search Box */}
+              <div className="search-box-wrapper">
+                <svg className="search-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input 
+                  type="text" 
+                  placeholder="Search by Address or ZPID..." 
+                  className="search-input"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+
+              {/* Price Range Filter */}
+              <select 
+                className="filter-select"
+                value={priceFilter}
+                onChange={(e) => setPriceFilter(e.target.value)}
+              >
+                <option value="all">All Prices</option>
+                <option value="under300">Under $300,000</option>
+                <option value="300to500">$300k - $500k</option>
+                <option value="500to750">$500k - $750k</option>
+                <option value="750to1m">$750k - $1M</option>
+                <option value="over1m">$1M+</option>
+              </select>
+
+              {/* Beds filter */}
+              <select 
+                className="filter-select"
+                value={bedsFilter}
+                onChange={(e) => setBedsFilter(e.target.value)}
+              >
+                <option value="all">Any Bedrooms</option>
+                <option value="1">1+ Beds</option>
+                <option value="2">2+ Beds</option>
+                <option value="3">3+ Beds</option>
+                <option value="4">4+ Beds</option>
+              </select>
+
+              {/* Deal status filter */}
+              <select 
+                className="filter-select"
+                value={dealFilter}
+                onChange={(e) => setDealFilter(e.target.value)}
+              >
+                <option value="all">All Deals</option>
+                <option value="discount">🟢 Priced below Zestimate</option>
+                <option value="overpriced">🔴 Priced above Zestimate</option>
+                <option value="no_zestimate">⚪ No Zestimate info</option>
+              </select>
+
+              {/* Sort order filter */}
+              <select 
+                className="filter-select"
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value)}
+              >
+                <option value="newest">Newest Scanned</option>
+                <option value="price_asc">Price: Low to High</option>
+                <option value="price_desc">Price: High to Low</option>
+                <option value="discount_desc">Biggest Discount %</option>
+              </select>
+
+              {/* Favorites filter button */}
+              <button 
+                type="button"
+                className={`filter-select ${showFavoritesOnly ? 'active-favorite' : ''}`}
+                style={{ 
+                  display: 'inline-flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  gap: '0.5rem', 
+                  background: showFavoritesOnly ? 'hsla(50, 95%, 55%, 0.12)' : 'var(--bg-tertiary)',
+                  borderColor: showFavoritesOnly ? 'hsl(45, 95%, 55%)' : 'var(--border-color)',
+                  color: showFavoritesOnly ? 'hsl(45, 95%, 65%)' : 'var(--text-primary)',
+                  fontWeight: '600',
+                  width: '100%'
+                }}
+                onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+              >
+                <span>{showFavoritesOnly ? '★ Favorites Only' : '☆ Show All'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Sidebar Footer: Database & Guide Actions */}
+        <div className="sidebar-footer">
+          <button className="btn btn-secondary" onClick={() => { setShowConfigGuide(true); setShowFilterSidebar(false); }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <span>Extension Setup</span>
+          </button>
+          {listings.some(l => l.favorite === 1) && (
+            <button 
+              className="btn btn-secondary" 
+              onClick={() => { handleSyncAllFavorites(); setShowFilterSidebar(false); }}
+              style={{ color: 'var(--accent-cyan)' }}
+              title="Sync All Favorites"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+              <span>Sync Favorites</span>
+            </button>
+          )}
+          <button className="btn btn-primary" onClick={() => { handleClipboardExport(); setShowFilterSidebar(false); }} disabled={filteredAndSortedListings.length === 0}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+            <span>Export to Sheets</span>
+          </button>
+          {listings.length > 0 && (
+            <button className="btn btn-danger" onClick={() => { handleClearAll(); setShowFilterSidebar(false); }} disabled={isDeleting}>
+              <span>{isDeleting ? "Clearing..." : "Clear Vault"}</span>
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
+
