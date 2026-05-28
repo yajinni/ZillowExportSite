@@ -1,5 +1,19 @@
 import React, { useState, useEffect } from 'react';
 
+// Helper to check if the installed extension version is strictly older than the latest version
+function isOutOfDate(installed, latest) {
+  if (!installed || !latest) return false;
+  const instParts = installed.split('.').map(Number);
+  const latParts = latest.split('.').map(Number);
+  for (let i = 0; i < Math.max(instParts.length, latParts.length); i++) {
+    const instVal = instParts[i] || 0;
+    const latVal = latParts[i] || 0;
+    if (instVal < latVal) return true;
+    if (instVal > latVal) return false;
+  }
+  return false;
+}
+
 export default function App() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,7 +34,8 @@ export default function App() {
   useEffect(() => {
     const fetchLatestVersion = async () => {
       try {
-        const res = await fetch("https://raw.githubusercontent.com/yajinni/ZillowExportExtention/main/manifest.json");
+        // Append a timestamp to bypass GitHub's 5-minute raw file CDN cache!
+        const res = await fetch(`https://raw.githubusercontent.com/yajinni/ZillowExportExtention/main/manifest.json?t=${Date.now()}`);
         if (res.ok) {
           const data = await res.json();
           if (data.version) {
@@ -298,7 +313,7 @@ export default function App() {
   return (
     <div className="app-container">
       {/* Extension Update Warning Banner */}
-      {extensionInstalled && extensionVersion && extensionVersion !== latestVersion && (
+      {extensionInstalled && extensionVersion && isOutOfDate(extensionVersion, latestVersion) && (
         <div 
           className="update-banner"
           style={{
