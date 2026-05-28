@@ -990,18 +990,8 @@ body {
 .sidebar-header {
   height: 70px;
   min-height: 70px;
-  padding: 0 10px;
   border-bottom: 1px solid var(--border-color);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   position: relative;
-  transition: padding 0.35s ease;
-}
-
-.filters-sidebar.active .sidebar-header {
-  justify-content: space-between;
-  padding: 0 1.5rem;
 }
 
 .sidebar-header h3 {
@@ -1012,14 +1002,17 @@ body {
   -webkit-text-fill-color: transparent;
   white-space: nowrap;
   opacity: 0;
-  transform: translateX(-20px);
+  position: absolute;
+  left: 1.5rem;
+  top: 50%;
+  transform: translateY(-50%) translateX(-20px);
   transition: opacity 0.25s ease, transform 0.25s ease;
   pointer-events: none;
 }
 
 .filters-sidebar.active .sidebar-header h3 {
   opacity: 1;
-  transform: translateX(0);
+  transform: translateY(-50%) translateX(0);
   pointer-events: auto;
 }
 
@@ -1034,8 +1027,16 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.25s;
+  transition: all 0.25s ease, right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 1001;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 10px; /* Centered in 60px collapsed bar */
+}
+
+.filters-sidebar.active .hamburger-btn {
+  right: 1.5rem; /* Aligned nicely in 360px expanded bar */
 }
 
 .hamburger-btn:hover {
