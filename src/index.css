@@ -697,7 +697,6 @@ body {
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-color);
   border-radius: 20px;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -719,6 +718,7 @@ body {
   height: 210px;
   width: 100%;
   overflow: hidden;
+  border-radius: 20px 20px 0 0;
   background: linear-gradient(135deg, hsla(180, 85%, 45%, 0.08) 0%, hsla(270, 75%, 65%, 0.08) 100%);
   border-bottom: 1px solid var(--border-color);
 }
@@ -1113,4 +1113,61 @@ body {
   .app-container {
     padding-right: 5rem !important;
   }
+}
+
+/* Custom Premium CSS Tooltips */
+[data-tooltip] {
+  position: relative;
+  cursor: help;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  background: hsla(222, 28%, 8%, 0.98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 0.65rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: normal;
+  width: 250px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), var(--shadow-glow);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10000;
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  line-height: 1.45;
+  text-align: left;
+  font-family: var(--font-sans);
+}
+
+/* Tooltip Little Arrow */
+[data-tooltip]::before {
+  content: '';
+  position: absolute;
+  bottom: 115%;
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  border-width: 6px 6px 0;
+  border-style: solid;
+  border-color: var(--border-color) transparent transparent;
+  display: block;
+  width: 0;
+  z-index: 10000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-tooltip]:hover::after,
+[data-tooltip]:hover::before {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
