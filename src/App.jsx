@@ -745,7 +745,7 @@ export default function App() {
                   Get the latest, pre-compiled version of the Zillow Data Export Chrome extension.
                 </p>
                 <a 
-                  href="/zillow-data-export.zip" 
+                  href="https://github.com/yajinni/ZillowExportExtention/raw/main/zillow-data-export.zip" 
                   download="zillow-data-export.zip"
                   className="btn btn-primary"
                   style={{ textDecoration: 'none', display: 'inline-flex', padding: '0.65rem 1.25rem', fontSize: '0.9rem', width: '100%', justifyContent: 'center' }}
