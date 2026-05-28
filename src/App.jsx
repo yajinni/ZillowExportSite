@@ -575,6 +575,14 @@ export default function App() {
                     <div className="card-footer-block">
                       <span className="card-timestamp">{formatDate(prop.scannedAt)}</span>
                       <div className="card-actions-wrapper">
+                        <button 
+                          className="row-action-btn"
+                          style={{ color: 'var(--accent-cyan)' }}
+                          onClick={() => window.open(prop.url + (prop.url.includes('?') ? '&' : '?') + 'autoSync=true', '_blank')}
+                          title="Sync Fresh Data: Opens this Zillow listing in a background tab to let your Chrome Extension grab the latest values and auto-close the tab."
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                        </button>
                         <a 
                           href={prop.url} 
                           target="_blank" 
