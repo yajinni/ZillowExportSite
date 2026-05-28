@@ -30,6 +30,42 @@ export default function App() {
   const [extensionVersion, setExtensionVersion] = useState(null);
   const [latestVersion, setLatestVersion] = useState("1.1");
   const [showFilterSidebar, setShowFilterSidebar] = useState(false);
+  const [newVersionAvailable, setNewVersionAvailable] = useState(false);
+
+  // Periodically check if a new build has been successfully deployed to Cloudflare Pages
+  useEffect(() => {
+    // Only check when running in production (where script tags point to built assets)
+    const currentScript = Array.from(document.querySelectorAll('script'))
+      .map(s => s.getAttribute('src'))
+      .find(src => src && src.includes('/assets/index-'));
+      
+    if (!currentScript) return;
+
+    const checkForUpdates = async () => {
+      try {
+        const res = await fetch(`/index.html?t=${Date.now()}`, { cache: 'no-store' });
+        if (res.ok) {
+          const htmlText = await res.text();
+          // Use regex to locate the index-*.js script tag inside the fetched HTML
+          const match = htmlText.match(/src="(\/assets\/index-[a-zA-Z0-9_-]+\.js)"/);
+          if (match && match[1] && match[1] !== currentScript) {
+            setNewVersionAvailable(true);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to check for dashboard updates:", err);
+      }
+    };
+
+    // Check once after 5 seconds, then poll every 20 seconds for rapid detection
+    const initialTimeout = setTimeout(checkForUpdates, 5000);
+    const interval = setInterval(checkForUpdates, 20000);
+
+    return () => {
+      clearTimeout(initialTimeout);
+      clearInterval(interval);
+    };
+  }, []);
 
   // Fetch the latest version dynamically from the extension's raw GitHub manifest on mount
   useEffect(() => {
@@ -957,6 +993,60 @@ export default function App() {
           )}
         </div>
       </div>
+
+      {/* Premium Dashboard Update Toast */}
+      {newVersionAvailable && (
+        <div 
+          className="update-toast"
+          style={{
+            position: 'fixed',
+            bottom: '24px',
+            left: '24px',
+            zIndex: 10000,
+            background: 'linear-gradient(135deg, hsla(180, 85%, 45%, 0.95) 0%, hsla(270, 75%, 65%, 0.95) 100%)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            border: '1px solid hsla(180, 85%, 55%, 0.3)',
+            padding: '1rem 1.5rem',
+            borderRadius: '16px',
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            boxShadow: '0 10px 25px rgba(0,0,0,0.3), 0 0 20px hsla(180, 85%, 45%, 0.2)',
+            animation: 'slideInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+            fontWeight: '600',
+            fontSize: '0.9rem'
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              ✨ Update Live!
+            </span>
+            <span style={{ fontSize: '0.8rem', opacity: 0.85, fontWeight: '500' }}>
+              A new build of the Zillow Data Vault dashboard is live.
+            </span>
+          </div>
+          <button 
+            className="btn btn-primary"
+            style={{ 
+              background: 'white', 
+              color: 'hsl(270, 75%, 35%)', 
+              padding: '0.45rem 1rem', 
+              fontSize: '0.8rem', 
+              borderRadius: '8px',
+              border: 'none',
+              fontWeight: '700',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap'
+            }}
+            onClick={() => window.location.reload(true)}
+          >
+            Refresh Now
+          </button>
+        </div>
+      )}
     </div>
   );
 }
