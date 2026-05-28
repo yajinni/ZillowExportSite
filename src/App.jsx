@@ -12,6 +12,26 @@ export default function App() {
   const [showConfigGuide, setShowConfigGuide] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [extensionInstalled, setExtensionInstalled] = useState(false);
+  const [extensionVersion, setExtensionVersion] = useState(null);
+
+  const LATEST_EXTENSION_VERSION = "1.1";
+
+  // Check for the extension's injected version attributes periodically
+  useEffect(() => {
+    const checkExtension = () => {
+      const installed = document.documentElement.getAttribute('data-zillow-extension-installed') === 'true';
+      const version = document.documentElement.getAttribute('data-zillow-extension-version');
+      if (installed) {
+        setExtensionInstalled(true);
+        setExtensionVersion(version);
+      }
+    };
+
+    checkExtension();
+    const interval = setInterval(checkExtension, 1500);
+    return () => clearInterval(interval);
+  }, []);
 
   // Dynamic API base URL detection
   const apiBase = window.location.origin;
@@ -260,6 +280,55 @@ export default function App() {
 
   return (
     <div className="app-container">
+      {/* Extension Update Warning Banner */}
+      {extensionInstalled && extensionVersion && extensionVersion !== LATEST_EXTENSION_VERSION && (
+        <div 
+          className="update-banner"
+          style={{
+            background: 'linear-gradient(135deg, hsla(30, 95%, 50%, 0.95) 0%, hsla(15, 95%, 45%, 0.95) 100%)',
+            backdropFilter: 'blur(10px)',
+            borderBottom: '1px solid hsla(30, 95%, 55%, 0.3)',
+            padding: '0.85rem 1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '1rem',
+            color: 'white',
+            fontWeight: '600',
+            fontSize: '0.92rem',
+            textAlign: 'center',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.25)',
+            position: 'sticky',
+            top: 0,
+            zIndex: 1000,
+            transition: 'all 0.3s',
+            borderRadius: '12px',
+            marginBottom: '1.5rem',
+            border: '1px solid hsla(30, 95%, 55%, 0.2)'
+          }}
+        >
+          <span>⚠️ Your Zillow Data Export extension (v{extensionVersion}) is out of date! A new version (v{LATEST_EXTENSION_VERSION}) is available.</span>
+          <button 
+            className="btn btn-primary"
+            style={{ 
+              background: 'white', 
+              color: 'hsl(15, 95%, 40%)', 
+              padding: '0.45rem 1rem', 
+              fontSize: '0.82rem', 
+              borderRadius: '6px',
+              border: 'none',
+              fontWeight: '700',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap'
+            }}
+            onClick={() => setShowConfigGuide(true)}
+          >
+            Update Extension
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <header className="app-header">
         <div className="brand-section">
