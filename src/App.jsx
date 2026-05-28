@@ -361,7 +361,6 @@ export default function App() {
           </button>
         </div>
       )}
-
       {/* Header */}
       <header className="app-header">
         <div className="brand-section">
@@ -371,23 +370,11 @@ export default function App() {
             <p>Cloud Storage & Analytics for Scanned Listings</p>
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div className="sync-status-indicator">
-            <span className={`status-dot ${error ? 'offline' : 'online'}`}></span>
-            <span>{error ? "Database Disconnected" : "Live Auto-Sync Active"}</span>
-          </div>
-          <button 
-            className="btn btn-secondary" 
-            onClick={() => setShowFilterSidebar(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem' }}
-            title="Open Filters & Dashboard Actions"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-            <span>Filters & Actions</span>
-          </button>
+        <div className="sync-status-indicator">
+          <span className={`status-dot ${error ? 'offline' : 'online'}`}></span>
+          <span>{error ? "Database Disconnected" : "Live Auto-Sync Active"}</span>
         </div>
       </header>
-
       {/* Metrics Grid */}
       <section className="metrics-grid">
         <div className="metric-card">
@@ -791,14 +778,22 @@ export default function App() {
         <div className="sidebar-header">
           <h3>Filters & Actions</h3>
           <button 
-            className="sidebar-close-btn"
-            onClick={() => setShowFilterSidebar(false)}
-            title="Close sidebar"
+            className="hamburger-btn"
+            onClick={() => setShowFilterSidebar(!showFilterSidebar)}
+            title={showFilterSidebar ? "Collapse Sidebar" : "Expand Sidebar"}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
+            {showFilterSidebar ? (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            )}
           </button>
         </div>
         
