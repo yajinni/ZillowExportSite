@@ -14,8 +14,25 @@ export default function App() {
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [extensionInstalled, setExtensionInstalled] = useState(false);
   const [extensionVersion, setExtensionVersion] = useState(null);
+  const [latestVersion, setLatestVersion] = useState("1.1");
 
-  const LATEST_EXTENSION_VERSION = "1.1";
+  // Fetch the latest version dynamically from the extension's raw GitHub manifest on mount
+  useEffect(() => {
+    const fetchLatestVersion = async () => {
+      try {
+        const res = await fetch("https://raw.githubusercontent.com/yajinni/ZillowExportExtention/main/manifest.json");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.version) {
+            setLatestVersion(data.version);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch latest extension version:", err);
+      }
+    };
+    fetchLatestVersion();
+  }, []);
 
   // Check for the extension's injected version attributes periodically
   useEffect(() => {
@@ -281,7 +298,7 @@ export default function App() {
   return (
     <div className="app-container">
       {/* Extension Update Warning Banner */}
-      {extensionInstalled && extensionVersion && extensionVersion !== LATEST_EXTENSION_VERSION && (
+      {extensionInstalled && extensionVersion && extensionVersion !== latestVersion && (
         <div 
           className="update-banner"
           style={{
@@ -307,7 +324,7 @@ export default function App() {
             border: '1px solid hsla(30, 95%, 55%, 0.2)'
           }}
         >
-          <span>⚠️ Your Zillow Data Export extension (v{extensionVersion}) is out of date! A new version (v{LATEST_EXTENSION_VERSION}) is available.</span>
+          <span>⚠️ Your Zillow Data Export extension (v{extensionVersion}) is out of date! A new version (v{latestVersion}) is available.</span>
           <button 
             className="btn btn-primary"
             style={{ 
