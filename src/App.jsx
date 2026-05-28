@@ -635,11 +635,17 @@ export default function App() {
 
                     {/* Detailed Comparisons Box */}
                     <div className="card-details-comparison">
-                      <div 
-                        className="comparison-box"
-                        data-tooltip="Zestimate: Zillow's proprietary market value estimate. A negative delta indicates a listing priced below Zestimate. Formula: ((Price - Zestimate) / Zestimate) * 100."
-                      >
-                        <span className="comparison-label">Zestimate</span>
+                      <div className="comparison-box">
+                        <span className="comparison-label" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                          Zestimate
+                          <span 
+                            data-tooltip="Zestimate: Zillow's proprietary market value estimate. A negative delta indicates a listing priced below Zestimate. Formula: ((Price - Zestimate) / Zestimate) * 100."
+                            style={{ cursor: 'help', color: 'var(--text-muted)', fontSize: '0.75rem', opacity: 0.7, transition: 'opacity 0.2s' }}
+                            className="info-icon"
+                          >
+                            ⓘ
+                          </span>
+                        </span>
                         <span className="comparison-value">{formatCurrency(prop.zestimate)}</span>
                         {deltaPct !== null && (
                           <span className="comparison-subvalue" style={{ color: isDiscount ? 'var(--accent-green)' : 'var(--text-secondary)', fontWeight: '600' }}>
@@ -648,11 +654,17 @@ export default function App() {
                         )}
                       </div>
 
-                      <div 
-                        className="comparison-box"
-                        data-tooltip="Tax Value: Valuation placed by the county assessor for property tax purposes. Highlighted green if Listing Price is <= 150% of Tax Value. Formula: ((Price - Tax Value) / Tax Value) * 100."
-                      >
-                        <span className="comparison-label">Tax Value</span>
+                      <div className="comparison-box">
+                        <span className="comparison-label" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                          Tax Value
+                          <span 
+                            data-tooltip="Tax Value: Valuation placed by the county assessor for property tax purposes. Highlighted green if Listing Price is <= 150% of Tax Value. Formula: ((Price - Tax Value) / Tax Value) * 100."
+                            style={{ cursor: 'help', color: 'var(--text-muted)', fontSize: '0.75rem', opacity: 0.7, transition: 'opacity 0.2s' }}
+                            className="info-icon"
+                          >
+                            ⓘ
+                          </span>
+                        </span>
                         <span className="comparison-value">{formatCurrency(prop.taxAssessedValue)}</span>
                         {taxDelta !== null && (
                           <span className="comparison-subvalue" style={{ color: isGoodTaxDeal ? 'var(--accent-green)' : 'var(--text-secondary)', fontWeight: '600' }}>
@@ -661,11 +673,17 @@ export default function App() {
                         )}
                       </div>
 
-                      <div 
-                        className="comparison-box"
-                        data-tooltip="Maximum Allowed Offer (MAO) for Flipping: The purchase limit to secure a 70% return on ARV (using Zestimate as a proxy) after estimated cosmetic rehab ($30/sqft). Formula: (Zestimate * 0.70) - (Sqft * 30). Highlighted green if Listing Price is <= MAO."
-                      >
-                        <span className="comparison-label">Flip MAO</span>
+                      <div className="comparison-box">
+                        <span className="comparison-label" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                          Flip MAO
+                          <span 
+                            data-tooltip="Maximum Allowed Offer (MAO) for Flipping: The purchase limit to secure a 70% return on ARV (using Zestimate as a proxy) after estimated cosmetic rehab ($30/sqft). Formula: (Zestimate * 0.70) - (Sqft * 30). Highlighted green if Listing Price is <= MAO."
+                            style={{ cursor: 'help', color: 'var(--text-muted)', fontSize: '0.75rem', opacity: 0.7, transition: 'opacity 0.2s' }}
+                            className="info-icon"
+                          >
+                            ⓘ
+                          </span>
+                        </span>
                         <span className="comparison-value" style={{ color: isMaoDeal ? 'var(--accent-green)' : 'var(--text-primary)', fontWeight: '700' }}>
                           {flipMao !== null ? formatCurrency(flipMao) : 'N/A'}
                         </span>
@@ -676,11 +694,17 @@ export default function App() {
                         )}
                       </div>
 
-                      <div 
-                        className="comparison-box"
-                        data-tooltip="Estimated Rental Yield: Estimated Cap Rate (Capitalization Rate) and monthly rent. Rent is modeled at 0.75% of Zestimate/month, and Operating Expenses are modeled at 35% of rent (taxes, insurance, maintenance). Formula: (Monthly Rent * 12 * 0.65) / Price. Highlighted green if Cap Rate >= 6%."
-                      >
-                        <span className="comparison-label">Est. Rent</span>
+                      <div className="comparison-box">
+                        <span className="comparison-label" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                          Est. Rent
+                          <span 
+                            data-tooltip="Estimated Rental Yield: Estimated Cap Rate (Capitalization Rate) and monthly rent. Rent is modeled at 0.75% of Zestimate/month, and Operating Expenses are modeled at 35% of rent (taxes, insurance, maintenance). Formula: (Monthly Rent * 12 * 0.65) / Price. Highlighted green if Cap Rate >= 6%."
+                            style={{ cursor: 'help', color: 'var(--text-muted)', fontSize: '0.75rem', opacity: 0.7, transition: 'opacity 0.2s' }}
+                            className="info-icon"
+                          >
+                            ⓘ
+                          </span>
+                        </span>
                         <span className="comparison-value" style={{ color: isCapRateGood ? 'var(--accent-green)' : 'var(--text-primary)', fontWeight: '700' }}>
                           {estRent !== null ? `${formatCurrency(estRent)}/mo` : 'N/A'}
                         </span>

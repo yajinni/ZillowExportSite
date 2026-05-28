@@ -1171,3 +1171,8 @@ body {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
+
+.info-icon:hover {
+  opacity: 1 !important;
+  color: var(--accent-cyan) !important;
+}
