@@ -1,7 +1,7 @@
 // Cloudflare Pages Functions: /api/listings
 const CORS_HEADERS = {
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, DELETE, PATCH, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     "Content-Type": "application/json"
 };
@@ -27,7 +27,7 @@ export async function onRequestGet(context) {
 
         // Query all listings ordered by the scan date (newest first)
         const { results } = await env.DB.prepare(
-            `SELECT zpid, url, address, price, zestimate, taxAssessedValue, beds, baths, sqft, pricePerSqft, imgSrc, scannedAt 
+            `SELECT zpid, url, address, price, zestimate, taxAssessedValue, beds, baths, sqft, pricePerSqft, imgSrc, scannedAt, favorite 
              FROM listings ORDER BY scannedAt DESC`
         ).all();
 
@@ -64,10 +64,22 @@ export async function onRequestPost(context) {
             });
         }
 
-        // Prepare the upsert statement
+        // Prepare the upsert statement using SQLite upsert syntax (ON CONFLICT) to preserve 'favorite' flag
         const stmt = env.DB.prepare(
-            `INSERT OR REPLACE INTO listings (zpid, url, address, price, zestimate, taxAssessedValue, beds, baths, sqft, pricePerSqft, imgSrc, scannedAt)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now', 'localtime'))`
+            `INSERT INTO listings (zpid, url, address, price, zestimate, taxAssessedValue, beds, baths, sqft, pricePerSqft, imgSrc, scannedAt)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now', 'localtime'))
+             ON CONFLICT(zpid) DO UPDATE SET
+                 url = excluded.url,
+                 address = excluded.address,
+                 price = excluded.price,
+                 zestimate = excluded.zestimate,
+                 taxAssessedValue = excluded.taxAssessedValue,
+                 beds = excluded.beds,
+                 baths = excluded.baths,
+                 sqft = excluded.sqft,
+                 pricePerSqft = excluded.pricePerSqft,
+                 imgSrc = excluded.imgSrc,
+                 scannedAt = datetime('now', 'localtime')`
         );
 
         // Run batch query for maximum performance on multiple properties
@@ -139,6 +151,44 @@ export async function onRequestDelete(context) {
                 headers: CORS_HEADERS
             });
         }
+    } catch (err) {
+        return new Response(JSON.stringify({ error: err.message }), {
+            status: 500,
+            headers: CORS_HEADERS
+        });
+    }
+}
+
+// PATCH toggle favorite status
+export async function onRequestPatch(context) {
+    try {
+        const { env, request } = context;
+        if (!env.DB) {
+            return new Response(JSON.stringify({ error: "D1 Database binding 'DB' is missing." }), {
+                status: 500,
+                headers: CORS_HEADERS
+            });
+        }
+
+        const url = new URL(request.url);
+        const zpid = url.searchParams.get("zpid");
+        const favorite = url.searchParams.get("favorite") === "1" ? 1 : 0;
+
+        if (!zpid) {
+            return new Response(JSON.stringify({ error: "Missing zpid parameter." }), {
+                status: 400,
+                headers: CORS_HEADERS
+            });
+        }
+
+        await env.DB.prepare("UPDATE listings SET favorite = ? WHERE zpid = ?")
+            .bind(favorite, zpid)
+            .run();
+
+        return new Response(JSON.stringify({ success: true, zpid, favorite }), {
+            status: 200,
+            headers: CORS_HEADERS
+        });
     } catch (err) {
         return new Response(JSON.stringify({ error: err.message }), {
             status: 500,

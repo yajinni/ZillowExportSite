@@ -11,6 +11,7 @@ export default function App() {
   const [sortOrder, setSortOrder] = useState('newest');
   const [showConfigGuide, setShowConfigGuide] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
   // Dynamic API base URL detection
   const apiBase = window.location.origin;
@@ -106,6 +107,52 @@ export default function App() {
     }
   };
 
+  // Handle toggling favorite status
+  const handleToggleFavorite = async (zpid, currentFavorite) => {
+    const newFavorite = currentFavorite === 1 ? 0 : 1;
+    
+    // Optimistic UI update for instantaneous responsiveness!
+    setListings(prev => 
+      prev.map(item => 
+        item.zpid === zpid ? { ...item, favorite: newFavorite } : item
+      )
+    );
+
+    try {
+      const res = await fetch(`${apiBase}/api/listings?zpid=${zpid}&favorite=${newFavorite}`, {
+        method: 'PATCH'
+      });
+      if (!res.ok) {
+        throw new Error("Failed to update favorite on server.");
+      }
+    } catch (err) {
+      console.error(err);
+      // Revert if server fails
+      setListings(prev => 
+        prev.map(item => 
+          item.zpid === zpid ? { ...item, favorite: currentFavorite } : item
+        )
+      );
+      alert("Error saving favorite: " + err.message);
+    }
+  };
+
+  // Sync all favorites in sequence with 1.2 second stagger to be safe and responsive
+  const handleSyncAllFavorites = () => {
+    const favorites = listings.filter(l => l.favorite === 1);
+    if (favorites.length === 0) {
+      alert("No favorite properties marked to sync!");
+      return;
+    }
+    if (confirm(`This will open ${favorites.length} Zillow listings in background tabs to refresh their values automatically. Continue?`)) {
+      favorites.forEach((prop, index) => {
+        setTimeout(() => {
+          window.open(prop.url + (prop.url.includes('?') ? '&' : '?') + 'autoSync=true', '_blank');
+        }, index * 1200);
+      });
+    }
+  };
+
   // Export listings to clipboard (TSV format, perfect drop-in for Excel or Sheets)
   const handleClipboardExport = () => {
     if (listings.length === 0) {
@@ -189,7 +236,13 @@ export default function App() {
       else if (dealFilter === 'overpriced') matchDeal = item.price > 0 && item.zestimate > 0 && item.price > item.zestimate;
       else if (dealFilter === 'no_zestimate') matchDeal = !item.zestimate;
 
-      return matchSearch && matchPrice && matchBeds && matchDeal;
+      // Favorites filter
+      let matchFavorite = true;
+      if (showFavoritesOnly) {
+        matchFavorite = item.favorite === 1;
+      }
+
+      return matchSearch && matchPrice && matchBeds && matchDeal && matchFavorite;
     })
     .sort((a, b) => {
       if (sortOrder === 'newest') {
@@ -332,6 +385,25 @@ export default function App() {
             <option value="price_desc">Price: High to Low</option>
             <option value="discount_desc">Biggest Discount %</option>
           </select>
+
+          {/* Favorites filter button */}
+          <button 
+            type="button"
+            className={`filter-select ${showFavoritesOnly ? 'active-favorite' : ''}`}
+            style={{ 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: '0.5rem', 
+              background: showFavoritesOnly ? 'hsla(50, 95%, 55%, 0.12)' : 'var(--bg-tertiary)',
+              borderColor: showFavoritesOnly ? 'hsl(45, 95%, 55%)' : 'var(--border-color)',
+              color: showFavoritesOnly ? 'hsl(45, 95%, 65%)' : 'var(--text-primary)',
+              fontWeight: '600'
+            }}
+            onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+          >
+            <span>{showFavoritesOnly ? '★ Favorites Only' : '☆ Show All'}</span>
+          </button>
         </div>
 
         {/* Global actions */}
@@ -340,6 +412,17 @@ export default function App() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             <span>Extension Setup</span>
           </button>
+          {listings.some(l => l.favorite === 1) && (
+            <button 
+              className="btn btn-secondary" 
+              onClick={handleSyncAllFavorites}
+              style={{ color: 'var(--accent-cyan)' }}
+              title="Sync All Favorites: Refreshes every marked favorite listing sequentially using Zillow in background tabs and auto-closes them."
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+              <span>Sync Favorites</span>
+            </button>
+          )}
           <button className="btn btn-primary" onClick={handleClipboardExport} disabled={filteredAndSortedListings.length === 0}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
             <span>Export to Sheets</span>
@@ -445,7 +528,38 @@ export default function App() {
                   {/* ZPID Badge Overlay */}
                   <span className="card-zpid-subbadge">ZPID: {prop.zpid}</span>
 
-
+                  {/* Favorite Toggle Button Overlay */}
+                  <button 
+                    className="card-favorite-btn"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleToggleFavorite(prop.zpid, prop.favorite);
+                    }}
+                    title={prop.favorite === 1 ? "Remove from Favorites" : "Add to Favorites"}
+                    style={{
+                      position: 'absolute',
+                      top: '14px',
+                      right: '14px',
+                      zIndex: 10,
+                      background: 'rgba(15, 23, 42, 0.75)',
+                      backdropFilter: 'blur(8px)',
+                      WebkitBackdropFilter: 'blur(8px)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '50%',
+                      width: '32px',
+                      height: '32px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      color: prop.favorite === 1 ? 'hsl(45, 95%, 55%)' : 'var(--text-secondary)',
+                      fontSize: '1.15rem',
+                      transition: 'all 0.2s',
+                      boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)'
+                    }}
+                  >
+                    {prop.favorite === 1 ? '★' : '☆'}
+                  </button>
 
                   {/* Card Image */}
                   <div className="card-image-wrapper">

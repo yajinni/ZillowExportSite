@@ -11,5 +11,6 @@ CREATE TABLE IF NOT EXISTS listings (
     sqft INTEGER,
     pricePerSqft REAL,
     imgSrc TEXT,
-    scannedAt TEXT DEFAULT (datetime('now', 'localtime'))
+    scannedAt TEXT DEFAULT (datetime('now', 'localtime')),
+    favorite INTEGER DEFAULT 0
 );
