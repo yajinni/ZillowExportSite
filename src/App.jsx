@@ -418,6 +418,28 @@ export default function App() {
                 : null;
               const isGoodTaxDeal = prop.price > 0 && prop.taxAssessedValue > 0 && prop.price <= 1.5 * prop.taxAssessedValue;
 
+              // Flip MAO (Maximum Allowed Offer) calculations
+              // Proxy ARV = Zestimate (fallback to price if missing)
+              const arv = prop.zestimate || prop.price || 0;
+              // Rehab estimate = $30/sqft (fallback to $25,000 if sqft is missing or invalid)
+              const estRehab = prop.sqft && prop.sqft > 0 ? prop.sqft * 30 : 25000;
+              const flipMao = arv > 0 ? (arv * 0.70) - estRehab : null;
+              const maoDelta = flipMao && flipMao > 0 && prop.price > 0
+                ? ((prop.price - flipMao) / flipMao) * 100
+                : null;
+              const isMaoDeal = flipMao && prop.price > 0 && prop.price <= flipMao;
+
+              // Rental Yield & Cap Rate calculations
+              // Monthly Rent Estimate = 0.75% of Zestimate (fallback to price if missing)
+              const estRent = arv > 0 ? Math.round(arv * 0.0075) : null;
+              const annualGrossRent = estRent ? estRent * 12 : 0;
+              // Operating Expenses = 35% of Gross Rent (leaving 65% for NOI)
+              const netOperatingIncome = annualGrossRent * 0.65;
+              const capRate = netOperatingIncome > 0 && prop.price > 0
+                ? (netOperatingIncome / prop.price) * 100
+                : null;
+              const isCapRateGood = capRate !== null && capRate >= 6.0;
+
               return (
                 <article key={prop.zpid} className="house-card">
                   {/* ZPID Badge Overlay */}
@@ -450,28 +472,41 @@ export default function App() {
                   <div className="card-body">
                     {/* Price Row */}
                     <div className="card-price-row">
-                      <span className="card-price-val">{formatCurrency(prop.price)}</span>
+                      <span 
+                        className="card-price-val"
+                        title="Listing Price: Current asking price of the property on Zillow."
+                      >
+                        {formatCurrency(prop.price)}
+                      </span>
                       {prop.pricePerSqft ? (
-                        <span className="card-price-sqft-val">{formatCurrency(prop.pricePerSqft)}/sqft</span>
+                        <span 
+                          className="card-price-sqft-val"
+                          title="Price per Square Foot: Calculated by dividing Listing Price by finished square footage. Formula: Price / Sqft."
+                        >
+                          {formatCurrency(prop.pricePerSqft)}/sqft
+                        </span>
                       ) : null}
                     </div>
 
                     {/* Address Text */}
-                    <div className="card-address-text" title={prop.address}>
+                    <div 
+                      className="card-address-text" 
+                      title={`Address: ${prop.address || 'Address Hidden/Missing'}`}
+                    >
                       {prop.address || 'Address Hidden/Missing'}
                     </div>
 
                     {/* Specs Row */}
                     <div className="card-specs-container">
-                      <div className="card-spec-item" title="Bedrooms">
+                      <div className="card-spec-item" title="Bedrooms: Number of bedrooms parsed from Zillow details.">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 4v16M2 8h20M22 4v16M2 12h20M2 16h20"></path></svg>
                         <span>{prop.beds !== null && prop.beds !== undefined ? `${prop.beds} bd` : '—'}</span>
                       </div>
-                      <div className="card-spec-item" title="Bathrooms">
+                      <div className="card-spec-item" title="Bathrooms: Number of bathrooms parsed from Zillow details.">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM21 21v-1a4 4 0 0 0-3-3.87m-11 0A4 4 0 0 0 2 20v1"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                         <span>{prop.baths !== null && prop.baths !== undefined ? `${prop.baths} ba` : '—'}</span>
                       </div>
-                      <div className="card-spec-item" title="Square Footage">
+                      <div className="card-spec-item" title="Square Footage: Total interior living area in square feet.">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line></svg>
                         <span>{prop.sqft ? prop.sqft.toLocaleString() : '—'}</span>
                       </div>
@@ -479,7 +514,10 @@ export default function App() {
 
                     {/* Detailed Comparisons Box */}
                     <div className="card-details-comparison">
-                      <div className="comparison-box">
+                      <div 
+                        className="comparison-box"
+                        title="Zestimate: Zillow's proprietary market value estimate. A negative delta indicates a listing priced below Zestimate. Formula: ((Price - Zestimate) / Zestimate) * 100."
+                      >
                         <span className="comparison-label">Zestimate</span>
                         <span className="comparison-value">{formatCurrency(prop.zestimate)}</span>
                         {deltaPct !== null && (
@@ -488,12 +526,46 @@ export default function App() {
                           </span>
                         )}
                       </div>
-                      <div className="comparison-box">
+
+                      <div 
+                        className="comparison-box"
+                        title="Tax Value: Valuation placed by the county assessor for property tax purposes. Highlighted green if Listing Price is <= 150% of Tax Value. Formula: ((Price - Tax Value) / Tax Value) * 100."
+                      >
                         <span className="comparison-label">Tax Value</span>
                         <span className="comparison-value">{formatCurrency(prop.taxAssessedValue)}</span>
                         {taxDelta !== null && (
                           <span className="comparison-subvalue" style={{ color: isGoodTaxDeal ? 'var(--accent-green)' : 'var(--text-secondary)', fontWeight: '600' }}>
                             Price {taxDelta > 0 ? '+' : ''}{taxDelta.toFixed(1)}%
+                          </span>
+                        )}
+                      </div>
+
+                      <div 
+                        className="comparison-box"
+                        title="Maximum Allowed Offer (MAO) for Flipping: The purchase limit to secure a 70% return on ARV (using Zestimate as a proxy) after estimated cosmetic rehab ($30/sqft). Formula: (Zestimate * 0.70) - (Sqft * 30). Highlighted green if Listing Price is <= MAO."
+                      >
+                        <span className="comparison-label">Flip MAO</span>
+                        <span className="comparison-value" style={{ color: isMaoDeal ? 'var(--accent-green)' : 'var(--text-primary)', fontWeight: '700' }}>
+                          {flipMao !== null ? formatCurrency(flipMao) : 'N/A'}
+                        </span>
+                        {maoDelta !== null && (
+                          <span className="comparison-subvalue" style={{ color: isMaoDeal ? 'var(--accent-green)' : 'var(--text-secondary)', fontWeight: '600' }}>
+                            Price {maoDelta > 0 ? '+' : ''}{maoDelta.toFixed(1)}%
+                          </span>
+                        )}
+                      </div>
+
+                      <div 
+                        className="comparison-box"
+                        title="Estimated Rental Yield: Estimated Cap Rate (Capitalization Rate) and monthly rent. Rent is modeled at 0.75% of Zestimate/month, and Operating Expenses are modeled at 35% of rent (taxes, insurance, maintenance). Formula: (Monthly Rent * 12 * 0.65) / Price. Highlighted green if Cap Rate >= 6%."
+                      >
+                        <span className="comparison-label">Est. Rent</span>
+                        <span className="comparison-value" style={{ color: isCapRateGood ? 'var(--accent-green)' : 'var(--text-primary)', fontWeight: '700' }}>
+                          {estRent !== null ? `${formatCurrency(estRent)}/mo` : 'N/A'}
+                        </span>
+                        {capRate !== null && (
+                          <span className="comparison-subvalue" style={{ color: isCapRateGood ? 'var(--accent-green)' : 'var(--text-secondary)', fontWeight: '600' }}>
+                            {capRate.toFixed(1)}% Cap
                           </span>
                         )}
                       </div>
