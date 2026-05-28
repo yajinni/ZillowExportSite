@@ -728,35 +728,89 @@ export default function App() {
       {/* Integration & Connection Settings Guide Modal */}
       {showConfigGuide && (
         <div className="modal-overlay" onClick={() => setShowConfigGuide(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Connect Chrome Extension</h3>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '580px', width: '100%' }}>
+            <div className="modal-header" style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem', marginBottom: '1.25rem' }}>
+              <h3 style={{ margin: 0 }}>Extension Installation & Setup Guide</h3>
             </div>
-            <div className="modal-body" style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
-              <p style={{ marginBottom: '1rem' }}>
-                Your extension needs to know where to send the house data. Keep this server running, and set the endpoint in your extension.
-              </p>
+            
+            <div className="modal-body" style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', maxHeight: '70vh', overflowY: 'auto', paddingRight: '0.5rem' }}>
               
-              <div style={{ background: 'var(--bg-tertiary)', padding: '1rem', borderRadius: '10px', border: '1px solid var(--border-color)', marginBottom: '1.5rem' }}>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.25rem', fontWeight: 'bold', textTransform: 'uppercase' }}>
-                  Your Vault API Endpoint URL
-                </div>
-                <code style={{ fontSize: '1rem', color: 'var(--accent-cyan)', fontWeight: 'bold', wordBreak: 'break-all' }}>
-                  {apiBase}
-                </code>
+              {/* Step 1: Download Zip */}
+              <div style={{ background: 'hsla(180, 85%, 45%, 0.05)', border: '1px solid hsla(180, 85%, 45%, 0.15)', borderRadius: '12px', padding: '1.25rem' }}>
+                <h4 style={{ color: 'var(--text-primary)', margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1rem' }}>
+                  <span style={{ background: 'var(--accent-cyan)', color: 'var(--bg-primary)', borderRadius: '50%', width: '22px', height: '22px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: 'bold' }}>1</span>
+                  Download the Extension Package
+                </h4>
+                <p style={{ margin: '0 0 1rem 0', fontSize: '0.88rem', lineHieght: '1.4' }}>
+                  Get the latest, pre-compiled version of the Zillow Data Export Chrome extension.
+                </p>
+                <a 
+                  href="/zillow-data-export.zip" 
+                  download="zillow-data-export.zip"
+                  className="btn btn-primary"
+                  style={{ textDecoration: 'none', display: 'inline-flex', padding: '0.65rem 1.25rem', fontSize: '0.9rem', width: '100%', justifyContent: 'center' }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px' }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  Download Extension (.ZIP)
+                </a>
               </div>
 
-              <h4 style={{ color: 'var(--text-primary)', marginBottom: '0.5rem', fontSize: '1rem' }}>How to setup:</h4>
-              <ol style={{ paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <li>Open the Zillow website.</li>
-                <li>You will see a new **⚙️ Setup** button next to the Export buttons.</li>
-                <li>Click it and paste the API Endpoint URL above.</li>
-                <li>Click Save. Your extension will now automatically upload every listing you search or scan!</li>
-              </ol>
+              {/* Step 2: Install in Chrome */}
+              <div>
+                <h4 style={{ color: 'var(--text-primary)', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1rem' }}>
+                  <span style={{ background: 'var(--accent-cyan)', color: 'var(--bg-primary)', borderRadius: '50%', width: '22px', height: '22px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: 'bold' }}>2</span>
+                  Install Extension in Chrome
+                </h4>
+                <ol style={{ paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', margin: 0, fontSize: '0.88rem' }}>
+                  <li>Locate the downloaded <code>zillow-data-export.zip</code> file and **extract it** to a folder on your computer.</li>
+                  <li>Open Google Chrome and type **<code>chrome://extensions/</code>** into the URL search bar.</li>
+                  <li>In the top-right corner of the Extensions page, switch the toggle for **Developer mode** to **ON**.</li>
+                  <li>Click the **Load unpacked** button in the top-left corner.</li>
+                  <li>Select the extracted folder containing the extension files (which includes <code>manifest.json</code>).</li>
+                </ol>
+              </div>
+
+              {/* Step 3: Link to your Vault */}
+              <div>
+                <h4 style={{ color: 'var(--text-primary)', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1rem' }}>
+                  <span style={{ background: 'var(--accent-cyan)', color: 'var(--bg-primary)', borderRadius: '50%', width: '22px', height: '22px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: 'bold' }}>3</span>
+                  Connect to Your Database Vault
+                </h4>
+                <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.88rem' }}>
+                  Provide your local or live companion website's API endpoint URL inside the extension:
+                </p>
+                
+                <div style={{ background: 'var(--bg-tertiary)', padding: '0.85rem 1rem', borderRadius: '10px', border: '1px solid var(--border-color)', marginBottom: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem', overflow: 'hidden' }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase' }}>Your Vault API Endpoint</span>
+                    <code style={{ fontSize: '0.92rem', color: 'var(--accent-cyan)', fontWeight: 'bold', wordBreak: 'break-all' }}>{apiBase}</code>
+                  </div>
+                  <button 
+                    className="row-action-btn"
+                    onClick={() => {
+                      navigator.clipboard.writeText(apiBase);
+                      alert("📋 Copied API Endpoint to clipboard!");
+                    }}
+                    title="Copy API Endpoint URL"
+                    style={{ background: 'var(--bg-secondary)', padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--border-color)', display: 'inline-flex' }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                  </button>
+                </div>
+
+                <ol style={{ paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', margin: 0, fontSize: '0.88rem' }} start="6">
+                  <li>Navigate to any page on <a href="https://www.zillow.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-cyan)', textDecoration: 'none', fontWeight: 'bold' }}>Zillow.com</a>.</li>
+                  <li>Click the **⚙️ Setup Vault** button inside the new glassmorphic control dock on the bottom-right.</li>
+                  <li>Paste the copied Endpoint URL from above and click **Save Connection**.</li>
+                  <li>Your extension dock status will turn **🟢 Vault Active** and automatically synchronize every searched home!</li>
+                </ol>
+              </div>
+
             </div>
-            <div className="modal-footer">
+            
+            <div className="modal-footer" style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem', marginTop: '1rem' }}>
               <button className="btn btn-primary" onClick={() => setShowConfigGuide(false)}>
-                Got It
+                Done
               </button>
             </div>
           </div>
